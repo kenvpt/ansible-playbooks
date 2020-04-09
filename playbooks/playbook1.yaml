@@ -1,6 +1,6 @@
 ---
     - name: My playbook
-      hosts: localhost
+      hosts: all
       become: true
       become_method: sudo
       tasks:
