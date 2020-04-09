@@ -1,5 +1,5 @@
 ---
-    - name: My fist playbook
+    - name: My playbook
       hosts: localhost
       become: true
       become_method: sudo
