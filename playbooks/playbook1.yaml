@@ -7,4 +7,4 @@
         - name: install package
           package: 
             name: httpd
-            statecd ..: installed
+            state : installed
