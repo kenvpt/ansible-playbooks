@@ -7,3 +7,5 @@
       tasks:
         - name: Run find command
           shell: 'find /var/log -type f -name "*.log" -size +100M -exec gzip -v9 {} +' #finding ".logs" file that has >=100M then execute gzip that file.
+        
+        
