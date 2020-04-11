@@ -6,6 +6,6 @@
       user: centos
       tasks:
         - name: Run find command
-          shell: 'find /var/log -type f -name "*.log" -mtime +90 -exec gzip -v9 {} +' #finding ".logs" file that has >=100M then execute gzip that file.
+          shell: 'find /var/log -type f -name "*.log" -mtime +90 -exec gzip -v9 {} +' #finding ".logs" file that has >=90 days then execute gzip that file.
         
         
