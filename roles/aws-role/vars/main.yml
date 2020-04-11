@@ -1,0 +1,25 @@
+---
+# vars file for aws-role
+#VPC
+vpc_name: "myvpc"
+vpc_cidr_block: "10.0.0.0/16"
+region: "us-east-1"
+
+#PUBLIC SUBNET
+public_subnet_cidr_block1_: "10.1.0.0/24"
+public_subnet_cidr_block2: "10.2.0.0/24"
+public_subnet_cidr_block3: "10.3.0.0/24"
+
+#PRIVATE SUBNET
+private_subnet_cidr_block1: "10.11.0.0/24"
+private_subnet_cidr_block1: "10.12.0.0/24"
+public_subnet_cidr_block1: "10.13.0.0/24"
+
+#Security Group
+security_grp_name: "webserver_security_grp"
+
+#VPN gateway
+vpn_name: myvpn
+
+
+

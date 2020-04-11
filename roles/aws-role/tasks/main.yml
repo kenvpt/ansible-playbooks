@@ -1,0 +1,117 @@
+---
+# tasks file for aws-role
+
+#Creating VPC
+- name: VPC
+  ec2_vpc_net:
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr_block }}"
+    region: "{{ region }}"
+    tags:
+      module: ec2_vpc_net
+    register: vpc
+
+#Creating PUBLIC SUBNET
+
+- name: public-subnet-1
+  ec2_vpc_subnet:
+     state: present
+     vpc_id: "{{ vpc_id }}"
+     cidr: "{{ public_subnet_cidr_block1 }}"
+     map_public: yes
+     register: public_subnet_1
+
+- name: public-subnet-2
+  ec2_vpc_subnet:
+     state: present
+     vpc_id: "{{ vpc_id }}"
+     cidr: "{{ public_subnet_cidr_block2 }}"
+     map_public: yes 
+     register: public_subnet_2
+
+- name: public-subnet-3
+  ec2_vpc_subnet:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      cidr: "{{ public_subnet_cidr_block3 }}"
+      map_public: yes 
+      register: public_subnet_3
+
+#Creating PRIVATE SUBNET
+
+- name: private-subnet-1
+  ec2_vpc_subnet:
+      state: present
+      pc_id: "{{ vpc_id }}"
+      cidr: "{{ private_subnet_cidr_block2 }}"
+      map_public: no
+      register: private_subnet_1
+
+- name: private-subnet-1
+  c2_vpc_subnet:
+      state: present
+      pc_id: "{{ vpc_id }}"
+      cidr: "{{ private_subnet_cidr_block2 }}"
+      map_public: no
+      register: private_subnet_2
+
+- name: private-subnet-1
+  ec2_vpc_subnet:
+      state: present
+      pc_id: "{{ vpc_id }}"
+      cidr: "{{ private_subnet_cidr_block2 }}"
+      map_public: no
+      register: private_subnet_3
+
+#Creating IGW
+
+ec2_vpc_igw:
+    vpc_id: "{{ vpc_id }}"
+    state: present
+  register: igw
+
+#Creating route table
+
+- name: Set up public subnet route table
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    tags:
+      Name: Public
+    subnets:
+      - "{{ public_subnet_1.subnet_id }}"
+      - "{{ public_subnet_2.subnet_id }}"
+      - "{{ public_subnet_3.subnet_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+  register: public_route_table
+
+#Creating Security Group
+- name: example using security group rule descriptions
+  ec2_group:
+    name: "{{ security_grp_name }}"
+    description: sg with rule descriptions
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    rules:
+      - proto: tcp
+        ports:
+        - 80
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 80
+
+#Creating EIP
+- name: allocate a new elastic IP and associate it with an instance
+  ec2_eip:
+    device_id: i-1212f003 #the id of ENI or Ec2 intance id
+
+#Creating VPN Gateway
+- name: Create a new vgw attached to a specific VPC
+  ec2_vpc_vgw:
+    state: present
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    name: "{{ vpn_name }}"
+    type: ipsec.1
+  register: vgw
