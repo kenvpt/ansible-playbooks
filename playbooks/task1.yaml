@@ -105,8 +105,8 @@
 
 # Creating a route 53
       - route53:
-           aws_access_key: AKIAVTTVGFVPAI6E3DIT
-           aws_secret_key: 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
+           aws_access_key: "{{ aws_access_key }}"
+           aws_secret_key: "{{ aws_secret_key }}"
            state: present
            zone: kenvpt.com
            record: wordpress.kenvpt.com
