@@ -1,30 +1,120 @@
-#add users
-- name: add several users
-  user:
-    name: "{{ item }}"
-    state: present
-  loop:
-     - bob
-     - ben
-     - lisa
-     - katty
-
- #make ssh-keygen    
-- name: return motd to registered var
-  command: ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
-     
-
-
 ---
+  - name: wordpress
+    hosts: all 
+    become: true
+    become_method: sudo
+    ignore_errors: true
+    tasks:
+      - name: yum update
+        command: yum update -y
+        
+      - name: Install required packages for wordpress
+        yum: name={{ item }} state=present
+        with_items:
+          - mariadb-server
+          - http://rpms.remirepo.net/enterprise/remi-release-7.rpm 
+          - httpd 
+          - python3
+      - name: php
+        command: yum-config-manager --enable remi-php72
+
+      - name: Install required packages for wordpress
+        yum: name={{ item }} state=present
+        with_items:
+          - php
+          - wget
+          - php-mysql
+          - MySQL-python
+
+      - name: python3 -m pip install PyMySQL
+        command: python3 -m pip install PyMySQL
+
+      - name: Download Wordpress
+        get_url: url=http://wordpress.org/wordpress-latest.tar.gz dest=/var/www/html/wordpress.tar.gz force=yes
+
+      - name: mysql start 
+        service: name=mariadb state=started enabled=yes
+
+      - name: Extract Wordpress
+        command: "tar xzf /var/www/html/wordpress.tar.gz -C /var/www/html --strip-components 1" #destination = -C # --strip-components = strip NUMBER leading components from file names on extraction
+
+      - name: Create a new database with name 'wpuser'
+        mysql_db:
+          name: wordpress
+          state: present
+
+      - name: Create database user with name 'bob' and password '12345' with all database privileges
+        mysql_user:
+           name: wpuser
+           password: mypass
+           priv: '*.*:ALL'
+           state: present
+           
+      - name: Copy file with owner and permissions
+        copy:
+          src: /var/www/html/wp-config-sample.php
+          dest: /var/www/html/wp-config.php
+          owner: apache
+          group: apache
+          mode: '0644'
+          remote_src: yes
+      
+      - name: change the the wp-config.php
+        shell: sed -i 's/database_name_here/wordpress/' /var/www/html/wp-config.php
+      - name: change the the wp-config.php
+        shell: sed -i 's/username_here/wpuser/' /var/www/html/wp-config.php
+      - name: change the the wp-config.php
+        shell: sed -i 's/password_here/mypass/' /var/www/html/wp-config.php
+
+      - name: make my directory tree readable
+        file:
+         path: /var/www/html
+         mode: u=rwX,g=rX,o=rX
+         recurse: yes
+         owner: apache
+         group: apache
+      
+
+      - name: Put SELinux in permissive mode.
+        selinux:
+           policy: targeted
+           state: permissive
+
+      - name: Apache is started now and at boot.
+        service: name=httpd state=started enabled=yes  
+
+#add users
+      - name: add several users
+        user:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - bob
+          - ben
+          - lisa
+          - katty
+      
+      - name: install pip
+        command: sudo yum install python-pip
+      - name: install boto 
+        command: sudo pip install boto
+
+      - name: script for ssh-keygen
+        shell: yes yes | ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+
+
 # Creating a route 53
-    - route53:
-        state: present
-        zone: kenvpt.com
-        record: wordpress.kenvpt.com
-        type: A
-        ttl: 7200
-        value:
-          - 1.1.1.1
-          - 2.2.2.2
-          - 3.3.3.3
-        wait: yes
+      - route53:
+           aws_access_key: AKIAVTTVGFVPAI6E3DIT
+           aws_secret_key: 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
+           state: present
+           zone: kenvpt.com
+           record: wordpress.kenvpt.com
+           type: A
+           ttl: 7200
+           wait: yes
+           value: 
+            - 54.246.165.237 
+           overwrite: yes 
+           
+           

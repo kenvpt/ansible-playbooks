@@ -13,14 +13,14 @@
           - httpd #php-sql
 
         - name: Download Wordpress
-          get_url: url=http://wordpress.org/wordpress-latest.tar.gz dest=/var/wwww/html/wordpress.tar.gz force=yes
+          get_url: url=http://wordpress.org/wordpress-latest.tar.gz dest=/var/www/html/wordpress.tar.gz force=yes
 
         - name: Extract Wordpress
           command: "tar -xzf /var/www/html/wordpress.tar.gz -C /var/www/html --strip-components 1" #destination = -C # --strip-components = strip NUMBER leading components from file names on extraction
 
         - name: make my directory tree readable
           file:
-            path: dest=/var/wwww/html
+            path: /var/www/html
             mode: u=rwX,g=rX,o=rX
             recurse: yes
             owner: apache
