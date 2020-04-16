@@ -1,0 +1,33 @@
+---
+  - name: playbook
+    hosts: all
+    become: true
+    become_method: sudo
+    user: centos
+    tasks:
+    - name: Setup a repo
+      when: (ansible_distribution == "CentOS" and ansible_distribution_major_version == "7") #only run it for centos7
+      shell: rpm -Uvh http://repo.nagios.com/nagios/7/nagios-repo-7-4.el7.noarch.rpm
+
+    - name: Install ncpa
+      package: 
+        name: ncpa
+        when: (ansible_distribution == "CentOS" and ansible_distribution_major_version == "7")
+        state: present # we usually use the present state when you want a specific version. 
+
+    - name: Change a line
+      when: (ansible_distribution == "CentOS" and ansible_distribution_major_version == "7")
+      lineinfile:
+        path: /usr/local/ncpa/etc/ncpa.cfg #configuration file for NCPA
+        regexp: '^community_string'
+        line: 'community_string = Str0ngT0k3n1' #changing the token here to have strong security
+      notify: RESTART_NCPA #when this play is successful then go to handlers
+      
+    handlers: 
+    - name: RESTART_NCPA
+      when: (ansible_distribution == "CentOS" and ansible_distribution_major_version == "7")
+      systemd:
+        name: ncpa_listener
+        state: restarted
+
+# NCPA is an agent we install in a VM so it can communicate with Nagios
